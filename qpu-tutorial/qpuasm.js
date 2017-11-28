@@ -280,7 +280,10 @@ var assemble = (function(module){
 	
 		if ( options['exportarray'] !== undefined )
 		{
-			show("const unsigned int " + options['exportarray'] + "[] = \n{");
+			//	gr: probably better as CLI args
+			var ArrayPrefix = "const uint32_t";
+			var ArraySuffix = "[] __attribute__ ((aligned(16))) =";
+			show( ArrayPrefix + " " + options['exportarray'] + ArraySuffix + "\n{");
 		}
 
 				
