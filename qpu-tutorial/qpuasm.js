@@ -278,6 +278,12 @@ var assemble = (function(module){
 			show("\n/* Assembled Program */");
 		}
 	
+		if ( options['exportarray'] !== undefined )
+		{
+			show("const unsigned int " + options['exportarray'] + "[] = \n{");
+		}
+
+				
 		program.split('\n').forEach(function(line){
 	
 			var chkaddr, chk0, chk1;
@@ -1078,9 +1084,14 @@ var assemble = (function(module){
 				}
 			}
 		});
-	
+		
+		if ( options['exportarray'] !== undefined )
+		{
+			show("};\n");
 		}
-	
+		
+		}
+		
 		for (global in globals) {
 			if (symbols[global] == null)
 				error("Error: global",global,"is missing a definition.");
@@ -1104,7 +1115,7 @@ var assemble = (function(module){
 	
 		var options = {in:[]};
 		if (process.argv.length < 3) {
-			console.log(process.argv[0], process.argv[1], "[--showbits] [--dumpglobals] [--dumpsymbols] [--verbose] [--ignore-errors] [--strict-match] [--exportentry=true] [--in]filename");
+			console.log(process.argv[0], process.argv[1], "[--showbits] [--dumpglobals] [--dumpsymbols] [--verbose] [--ignore-errors] [--strict-match] [--exportentry=true] [--exportarray=name] [--in]filename");
 		}
 		for (var i=2; i<process.argv.length; i++) {
 			if(process.argv[i].indexOf('--no-') == 0) {
