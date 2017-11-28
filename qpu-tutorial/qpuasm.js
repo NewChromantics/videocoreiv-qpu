@@ -263,13 +263,17 @@ var assemble = (function(module){
 	
 		// Dump global symbols
 		if (pass==1) {
-			show("/* Exported Symbols */");
-			for (symbol in symbols) {
-				if (globals[symbol]) {
-					console.log("#define", "qpu_symbol_"+symbol, toHex(symbols[symbol]));
+				
+			if ( options['exportentry'] == true )
+			{
+				show("/* Exported Symbols */");
+				for (symbol in symbols) {
+					if (globals[symbol]) {
+						console.log("#define", "qpu_symbol_"+symbol, toHex(symbols[symbol]));
+					}
 				}
 			}
-	
+				
 			// Assembled Program
 			show("\n/* Assembled Program */");
 		}
@@ -1100,7 +1104,7 @@ var assemble = (function(module){
 	
 		var options = {in:[]};
 		if (process.argv.length < 3) {
-			console.log(process.argv[0], process.argv[1], "[--showbits] [--dumpglobals] [--dumpsymbols] [--verbose] [--ignore-errors] [--strict-match] [--in]filename");
+			console.log(process.argv[0], process.argv[1], "[--showbits] [--dumpglobals] [--dumpsymbols] [--verbose] [--ignore-errors] [--strict-match] [--exportentry=true] [--in]filename");
 		}
 		for (var i=2; i<process.argv.length; i++) {
 			if(process.argv[i].indexOf('--no-') == 0) {
@@ -1108,18 +1112,52 @@ var assemble = (function(module){
 				options[param[0]] = param[1] || false;
 			}
 			else if(process.argv[i].indexOf('--') == 0) {
-				var param = process.argv[i].substring(2).split('=', 1);
+				var param = process.argv[i].substring(2).split('=', 2);
 				options[param[0]] = param[1] || true;
 			}
 			else {
 				options.in = process.argv[i];
-				if (existsSync(options.in))
-					assemble(fs.readFileSync(options.in, 'utf8'), options);
-				else
-					console.log('Error: Can\'t open', options.in, 'to assemble.');
 			}
 		}
-	
+				
+		function to_bool(value,defaultresult)
+		{
+			if ( typeof(value) == typeof("") )
+				value = value.trim().toLowerCase();
+				
+			switch(value)
+			{
+				case false:
+				case 'false':
+				case 0:
+				case '0':
+					return false;
+				
+				case true:
+				case 'true':
+				case 1:
+				case '1':
+					return true;
+
+				default:
+					return defaultresult;
+			}
+		}
+				
+				
+		//	defaults/input as bool
+		options['exportentry'] = to_bool(options['exportentry'], true );
+				
+		if ( options.in === undefined )
+			throw "No input file specified";
+				
+		//	execute
+		//	throw to make node return 1
+		if (existsSync(options.in))
+			assemble(fs.readFileSync(options.in, 'utf8'), options);
+		else
+			throw 'Error: Can\'t open', options.in, 'to assemble.';
+				
 	}else{
 		module = module || {};
 		module.exports = assemble;
